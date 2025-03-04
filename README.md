@@ -49,7 +49,33 @@ L'API sera disponible à l'adresse :
 http://localhost:5000
 ```
 
+## Étapes de migration
 
+Les migrations sont automatiquement appliquées au démarrage de l'application grâce au fichier `run.py`. Si tu souhaites appliquer manuellement les migrations :
+
+### Accéder au conteneur web
+
+```bash
+docker-compose exec web bash
+```
+
+### Initialiser les migrations (si ce n'est pas déjà fait)
+
+```bash
+flask db init
+```
+
+### Créer une migration
+
+```bash
+flask db migrate -m "Initial migration"
+```
+
+### Appliquer la migration
+
+```bash
+flask db upgrade
+```
 
 ## Tester les fonctionnalités
 
