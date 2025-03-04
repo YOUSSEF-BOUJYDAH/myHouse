@@ -35,5 +35,4 @@ def create_app():
     app.register_blueprint(auth_routes, url_prefix='/api/auth')
     app.register_blueprint(user_routes, url_prefix='/api/users')
     app.register_blueprint(property_routes, url_prefix='/api/properties')
-
     return app
