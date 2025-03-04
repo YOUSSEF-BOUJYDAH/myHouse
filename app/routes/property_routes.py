@@ -59,7 +59,7 @@ def get_properties(city):
 def add_room(property_id):
     current_user_id = get_jwt_identity()
 
-    # Vérifier que l'utilisateur est le propriétaire du bien
+
     if  validate_ownership(property_id, current_user_id):
         return jsonify({"msg": "You are not the owner of this property"}), 403
 
