@@ -14,10 +14,8 @@ def create_property(name, description, type, city, owner_id):
     db.session.commit()
     return new_property
 
-def update_property(property_id, owner_id, name=None, description=None, type=None, city=None):
+def update_property(property_id, name=None, description=None, type=None, city=None):
     property = Property.query.get_or_404(property_id)
-    if property.owner_id != owner_id:
-        raise PermissionError("You are not the owner of this property")
 
     if name:
         property.name = name
@@ -27,17 +25,14 @@ def update_property(property_id, owner_id, name=None, description=None, type=Non
         property.type = type
     if city:
         property.city = city
+
     db.session.commit()
     return property
 
 def get_properties_by_city(city):
     return Property.query.filter_by(city=city).all()
 
-def add_room_to_property(property_id, owner_id, name, size):
-    property = Property.query.get_or_404(property_id)
-    if property.owner_id != owner_id:
-        raise PermissionError("You are not the owner of this property")
-
+def add_room_to_property(property_id, name, size):
     new_room = Room(
         name=name,
         size=size,

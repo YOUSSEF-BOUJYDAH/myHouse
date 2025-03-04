@@ -6,6 +6,7 @@ from app.services.property_service import (
     get_properties_by_city,
     add_room_to_property
 )
+from app.utils.validators import validate_ownership
 
 property_routes = Blueprint('property_routes', __name__)
 
@@ -27,10 +28,14 @@ def add_property():
 @jwt_required()
 def modify_property(property_id):
     current_user_id = get_jwt_identity()
+
+    # Vérifier que l'utilisateur est le propriétaire du bien
+    if not validate_ownership(property_id, current_user_id):
+        return jsonify({"msg": "You are not the owner of this property"}), 403
+
     data = request.get_json()
     updated_property = update_property(
         property_id=property_id,
-        owner_id=current_user_id,
         name=data.get('name'),
         description=data.get('description'),
         type=data.get('type'),
@@ -53,10 +58,14 @@ def get_properties(city):
 @jwt_required()
 def add_room(property_id):
     current_user_id = get_jwt_identity()
+
+    # Vérifier que l'utilisateur est le propriétaire du bien
+    if not validate_ownership(property_id, current_user_id):
+        return jsonify({"msg": "You are not the owner of this property"}), 403
+
     data = request.get_json()
     new_room = add_room_to_property(
         property_id=property_id,
-        owner_id=current_user_id,
         name=data['name'],
         size=data['size']
     )
