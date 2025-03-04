@@ -10,7 +10,7 @@ from app.utils.validators import validate_ownership
 
 property_routes = Blueprint('property_routes', __name__)
 
-@property_routes.route('/properties', methods=['POST'])
+@property_routes.route('/add', methods=['POST'])
 @jwt_required()
 def add_property():
     current_user_id = get_jwt_identity()
@@ -24,13 +24,13 @@ def add_property():
     )
     return jsonify({"message": "Property created successfully", "property_id": new_property.id}), 201
 
-@property_routes.route('/properties/<int:property_id>', methods=['PUT'])
+@property_routes.route('/update/<int:property_id>', methods=['PUT'])
 @jwt_required()
 def modify_property(property_id):
     current_user_id = get_jwt_identity()
 
     # Vérifier que l'utilisateur est le propriétaire du bien
-    if not validate_ownership(property_id, current_user_id):
+    if  validate_ownership(property_id, current_user_id):
         return jsonify({"msg": "You are not the owner of this property"}), 403
 
     data = request.get_json()
@@ -41,9 +41,9 @@ def modify_property(property_id):
         type=data.get('type'),
         city=data.get('city')
     )
-    return jsonify({"message": "Property updated successfully", "property": updated_property}), 200
+    return jsonify({"message": "Property updated successfully", "property": updated_property.to_dict()}), 200
 
-@property_routes.route('/properties/<string:city>', methods=['GET'])
+@property_routes.route('/getByCity/<string:city>', methods=['GET'])
 def get_properties(city):
     properties = get_properties_by_city(city)
     return jsonify([{
@@ -54,13 +54,13 @@ def get_properties(city):
         "city": p.city
     } for p in properties]), 200
 
-@property_routes.route('/properties/<int:property_id>/rooms', methods=['POST'])
+@property_routes.route('/addRoom/<int:property_id>/rooms', methods=['POST'])
 @jwt_required()
 def add_room(property_id):
     current_user_id = get_jwt_identity()
 
     # Vérifier que l'utilisateur est le propriétaire du bien
-    if not validate_ownership(property_id, current_user_id):
+    if  validate_ownership(property_id, current_user_id):
         return jsonify({"msg": "You are not the owner of this property"}), 403
 
     data = request.get_json()

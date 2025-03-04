@@ -32,7 +32,7 @@ MyHouse est une application web de gestion immobilière qui permet aux utilisate
 ### Cloner le dépôt
 
 ```bash
-git clone https://github.com/ton-username/myHouse.git
+git clone git@github.com:YOUSSEF-BOUJYDAH/myHouse.git
 cd myHouse
 ```
 
@@ -82,7 +82,7 @@ flask db upgrade
 ### 1. Créer un utilisateur
 
 ```bash
-curl -X POST http://localhost:5000/api/users \
+curl -X POST http://localhost:5000/api/users/add \
      -H "Content-Type: application/json" \
      -d '{
            "first_name": "John",
@@ -107,7 +107,7 @@ curl -X POST http://localhost:5000/api/auth/login \
 ### 3. Ajouter un bien immobilier
 
 ```bash
-curl -X POST http://localhost:5000/api/properties \
+curl -X POST http://localhost:5000/api/properties/add \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer <JWT>" \
      -d '{
@@ -121,7 +121,7 @@ curl -X POST http://localhost:5000/api/properties \
 ### 4. Modifier un bien immobilier
 
 ```bash
-curl -X PUT http://localhost:5000/api/properties/1 \
+curl -X PUT http://localhost:5000/api/properties/update/1 \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer <JWT>" \
      -d '{
@@ -133,13 +133,13 @@ curl -X PUT http://localhost:5000/api/properties/1 \
 ### 5. Lister les biens d'une ville
 
 ```bash
-curl -X GET http://localhost:5000/api/properties/Paris
+curl -X GET http://localhost:5000/api/properties/getByCity/Paris
 ```
 
 ### 6. Ajouter une pièce à un bien
 
 ```bash
-curl -X POST http://localhost:5000/api/properties/1/rooms \
+curl -X POST http://localhost:5000/api/properties/addRoom/1/rooms \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer <JWT>" \
      -d '{
@@ -153,7 +153,7 @@ curl -X POST http://localhost:5000/api/properties/1/rooms \
 #### Test 1 : Modifier un bien avec un autre utilisateur
 
 ```bash
-curl -X PUT http://localhost:5000/api/properties/1 \
+curl -X PUT http://localhost:5000/api/properties/update/1 \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer <JWT_Jane>" \
      -d '{
@@ -172,7 +172,7 @@ curl -X PUT http://localhost:5000/api/properties/1 \
 #### Test 2 : Modifier un bien avec le propriétaire
 
 ```bash
-curl -X PUT http://localhost:5000/api/properties/1 \
+curl -X PUT http://localhost:5000/api/properties/update/1 \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer <JWT_John>" \
      -d '{

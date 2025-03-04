@@ -10,5 +10,15 @@ class Property(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     rooms = db.relationship('Room', backref='property', lazy=True)
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "type": self.type,
+            "city": self.city
+        }
+
+
     def __repr__(self):
         return f"<Property {self.name}>"

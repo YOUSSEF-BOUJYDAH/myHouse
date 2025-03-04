@@ -4,7 +4,7 @@ from app.services.user_service import create_user, update_user
 
 user_routes = Blueprint('user_routes', __name__)
 
-@user_routes.route('/users', methods=['POST'])
+@user_routes.route('/add', methods=['POST'])
 def register_user():
     data = request.get_json()
     user = create_user(
@@ -16,7 +16,7 @@ def register_user():
     )
     return jsonify({"message": "User created successfully", "user_id": user.id}), 201
 
-@user_routes.route('/users/<int:user_id>', methods=['PUT'])
+@user_routes.route('/update/<int:user_id>', methods=['PUT'])
 @jwt_required()
 def modify_user(user_id):
     current_user_id = get_jwt_identity()
