@@ -11,7 +11,7 @@ def register_user():
         first_name=data['first_name'],
         last_name=data['last_name'],
         email=data['email'],
-        password=data['password'],  # En production, hachez le mot de passe
+        password=data['password'],
         date_of_birth=data['date_of_birth']
     )
     return jsonify({"message": "User created successfully", "user_id": user.id}), 201
