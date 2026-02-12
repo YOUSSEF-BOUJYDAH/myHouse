@@ -54,14 +54,14 @@ cp .env.example .env
 Remplir les valeurs sensibles dans `.env` :
 
 ```env
-# Exemple minimal – MODIFIER OBLIGATOIREMENT
-POSTGRES_USER=myhouseuser
-POSTGRES_PASSWORD=ChangeMeWithAVeryStrongPassword2026!!
+
+POSTGRES_USER=
+POSTGRES_PASSWORD=
 POSTGRES_DB=myHouse
 
 DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 
-JWT_SECRET_KEY=generate_a_very_long_random_string_here_min_64_chars
+JWT_SECRET_KEY=
 ```
 
 Générer une bonne clé JWT :
