@@ -2,7 +2,7 @@
 
 Petit projet personnel de gestion immobilière développé avec **Flask**, **PostgreSQL**, **JWT** et **Docker**.
 
-**Objectif** : démontrer les compétences backend Python junior (authentification, CRUD, contrôle d’accès, conteneurisation, tests, CI/CD, déploiement Kubernetes simple).
+**Objectif** : démontrer les compétences backend Python  (authentification, CRUD, contrôle d’accès, conteneurisation, tests, CI/CD, déploiement Kubernetes simple).
 
 ---
 
