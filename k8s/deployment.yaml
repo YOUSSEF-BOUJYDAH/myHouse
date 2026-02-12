@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myhouse-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myhouse
+  template:
+    metadata:
+      labels:
+        app: myhouse
+    spec:
+      containers:
+      - name: api
+        image: tonusername/myhouse:latest
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - secretRef:
+            name: myhouse-secrets   
