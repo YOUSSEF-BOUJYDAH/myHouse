@@ -1,0 +1,69 @@
+name: CI - Tests + Build + Push Docker Hub
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-build-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ────────────────────────────────
+      # 1. Récupérer le code
+      # ────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ────────────────────────────────
+      # 2. Setup Python + dépendances
+      # ────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'   # ou la version que tu utilises
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+          pip install pytest pytest-cov   # si pas déjà dans requirements.txt
+
+      # ────────────────────────────────
+      # 3. Lancer les tests
+      # ────────────────────────────────
+      - name: Run tests
+        run: |
+          pytest tests/ -v --cov=app
+        continue-on-error: false   # arrête si tests KO
+
+      # ────────────────────────────────
+      # 4. Setup Docker Buildx
+      # ────────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ────────────────────────────────
+      # 5. Login Docker Hub
+      # ────────────────────────────────
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # ────────────────────────────────
+      # 6. Build & push image
+      # ────────────────────────────────
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/myhouse:latest
+            ${{ secrets.DOCKER_USERNAME }}/myhouse:${{ github.sha }}
