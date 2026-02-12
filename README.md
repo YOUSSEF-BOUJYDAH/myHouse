@@ -1,197 +1,234 @@
-# MyHouse - Application de Gestion Immobilière
+# MyHouse – Gestion Immobilière (API REST)
 
-MyHouse est une application web de gestion immobilière qui permet aux utilisateurs de gérer des biens immobiliers, d'ajouter des pièces, et de consulter les biens disponibles. L'application est construite avec Flask, SQLAlchemy, et Docker.
+Petit projet personnel de gestion immobilière développé avec **Flask**, **PostgreSQL**, **JWT** et **Docker**.
 
-## Fonctionnalités
+**Objectif** : démontrer les compétences backend Python junior (authentification, CRUD, contrôle d’accès, conteneurisation, tests, CI/CD, déploiement Kubernetes simple).
 
-- **Authentification** :
-    - Les utilisateurs peuvent se connecter et obtenir un token JWT.
+---
 
-- **Gestion des utilisateurs** :
-    - Créer un utilisateur.
-    - Modifier les informations d'un utilisateur.
+## Fonctionnalités principales
 
-- **Gestion des biens immobiliers** :
-    - Ajouter un bien immobilier.
-    - Modifier un bien immobilier.
-    - Lister les biens d'une ville.
+* Inscription et connexion utilisateurs (JWT)
+* Création, modification et consultation de biens immobiliers
+* Ajout de pièces à un bien immobilier
+* Seul le **propriétaire** peut modifier ou supprimer un bien
+* Filtrage des biens par ville
 
-- **Gestion des pièces** :
-    - Ajouter une pièce à un bien.
+---
 
-- **Fonctionnalité bonus** :
-    - Seul le propriétaire d'un bien peut le modifier.
+## Stack technique
+
+* **Backend** : Python 3 + Flask
+* **Base de données** : PostgreSQL + SQLAlchemy
+* **Authentification** : Flask-JWT-Extended
+* **Conteneurisation** : Docker + docker-compose
+* **Tests** : pytest
+* **Déploiement** : Kubernetes (Deployment, Service, HPA CPU)
+* **CI/CD** : GitHub Actions (tests + build + push image)
+
+---
 
 ## Prérequis
 
-- Docker
-- Docker Compose
+* Docker + Docker Compose (développement local)
+* kubectl + un cluster Kubernetes (Minikube, Kind, ou cloud)
+* Compte Docker Hub (ou GitHub Container Registry)
 
-## Lancer l'application
+---
 
-### Cloner le dépôt
+## Installation & lancement rapide (local)
+
+### 1. Cloner le dépôt
 
 ```bash
-git clone git@github.com:YOUSSEF-BOUJYDAH/myHouse.git
+git clone https://github.com/YOUSSEF-BOUJYDAH/myHouse.git
 cd myHouse
 ```
 
-### Construire et lancer les conteneurs
+### 2. Créer le fichier d’environnement
 
 ```bash
-docker-compose up --build
+cp .env.example .env
 ```
 
-### Accéder à l'application
+Remplir les valeurs sensibles dans `.env` :
 
-L'API sera disponible à l'adresse :
+```env
+# Exemple minimal – MODIFIER OBLIGATOIREMENT
+POSTGRES_USER=myhouseuser
+POSTGRES_PASSWORD=ChangeMeWithAVeryStrongPassword2026!!
+POSTGRES_DB=myHouse
+
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+JWT_SECRET_KEY=generate_a_very_long_random_string_here_min_64_chars
 ```
-http://localhost:5000
-```
 
-## Étapes de migration
-
-Les migrations sont automatiquement appliquées au démarrage de l'application grâce au fichier `run.py`. Si tu souhaites appliquer manuellement les migrations :
-
-### Accéder au conteneur web
+Générer une bonne clé JWT :
 
 ```bash
-docker-compose exec web bash
+openssl rand -hex 32
+# ou
+python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-### Initialiser les migrations (si ce n'est pas déjà fait)
+### 3. Lancer l’application
 
 ```bash
-flask db init
+docker compose up --build
 ```
 
-### Créer une migration
+➡️ L’API est disponible sur : **[http://localhost:5000](http://localhost:5000)**
+
+---
+
+## Tester l’API (exemples `curl`)
+
+### Créer un utilisateur
 
 ```bash
-flask db migrate -m "Initial migration"
+curl -X POST http://localhost:5000/add \
+  -H "Content-Type: application/json" \
+  -d '{
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john.doe@example.com",
+        "password": "password123",
+        "date_of_birth": "1990-01-01"
+      }'
 ```
 
-### Appliquer la migration
+### Se connecter
 
 ```bash
-flask db upgrade
+curl -X POST http://localhost:5000/login \
+  -H "Content-Type: application/json" \
+  -d '{
+        "email": "john.doe@example.com",
+        "password": "password123"
+      }'
 ```
 
-## Tester les fonctionnalités
-
-### 1. Créer un utilisateur
+### Ajouter un bien immobilier
 
 ```bash
-curl -X POST http://localhost:5000/api/users/add \
-     -H "Content-Type: application/json" \
-     -d '{
-           "first_name": "John",
-           "last_name": "Doe",
-           "email": "john.doe@example.com",
-           "password": "password123",
-           "date_of_birth": "1990-01-01"
-         }'
+curl -X POST http://localhost:5000/add \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer VOTRE_TOKEN" \
+  -d '{
+        "name": "Appartement Lyon",
+        "description": "T3 lumineux centre-ville",
+        "type": "Appartement",
+        "city": "Lyon"
+      }'
 ```
 
-### 2. Se connecter (obtenir un token JWT)
+### Modifier un bien (test propriétaire)
 
 ```bash
-curl -X POST http://localhost:5000/api/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{
-           "email": "john.doe@example.com",
-           "password": "password123"
-         }'
+curl -X PUT http://localhost:5000/update/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer VOTRE_TOKEN" \
+  -d '{
+        "name": "Appartement Lyon – Modifié"
+      }'
 ```
 
-### 3. Ajouter un bien immobilier
+### Lister les biens par ville
 
 ```bash
-curl -X POST http://localhost:5000/api/properties/add \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <JWT>" \
-     -d '{
-           "name": "Maison à Paris",
-           "description": "Une belle maison en plein cœur de Paris.",
-           "type": "Maison",
-           "city": "Paris"
-         }'
+curl http://localhost:5000/getByCity/Lyon
 ```
 
-### 4. Modifier un bien immobilier
+### Ajouter une pièce
 
 ```bash
-curl -X PUT http://localhost:5000/api/properties/update/1 \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <JWT>" \
-     -d '{
-           "name": "Maison à Paris (modifiée)",
-           "description": "Une très belle maison en plein cœur de Paris."
-         }'
+curl -X POST http://localhost:5000/addRoom/1/rooms \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer VOTRE_TOKEN" \
+  -d '{
+        "name": "Chambre parentale",
+        "size": 18
+      }'
 ```
 
-### 5. Lister les biens d'une ville
+---
+
+## Tests
 
 ```bash
-curl -X GET http://localhost:5000/api/properties/getByCity/Paris
+# Dans le conteneur (recommandé)
+docker compose exec web pytest tests/ -v
+
+# Ou localement
+pytest tests/ -v
 ```
 
-### 6. Ajouter une pièce à un bien
+---
+
+## Déploiement Kubernetes (simple)
+
+Le dossier `k8s/` contient :
+
+* `deployment.yaml` → 2 replicas
+* `service.yaml` → ClusterIP
+* `hpa.yaml` → autoscaling CPU (> 65 %)
+
+### Étapes rapides
 
 ```bash
-curl -X POST http://localhost:5000/api/properties/addRoom/1/rooms \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <JWT>" \
-     -d '{
-           "name": "Salon",
-           "size": 20
-         }'
+# Créer le secret (une seule fois)
+kubectl create secret generic myhouse-secrets \
+  --from-literal=DATABASE_URL="postgresql://myhouseuser:TON_MDP@db-service:5432/myHouse" \
+  --from-literal=JWT_SECRET_KEY="TA_CLE_TRES_LONGUE"
+
+# Déployer
+kubectl apply -f k8s/
+
+# Vérifier
+kubectl get pods,svc,deploy,hpa -l app=myhouse
 ```
 
-### 7. Fonctionnalité bonus : Seul le propriétaire peut modifier un bien
+---
 
-#### Test 1 : Modifier un bien avec un autre utilisateur
+## CI/CD – GitHub Actions
 
-```bash
-curl -X PUT http://localhost:5000/api/properties/update/1 \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <JWT_Jane>" \
-     -d '{
-           "name": "Maison à Paris (modifiée par Jane)"
-         }'
-```
+Workflow situé dans `.github/workflows/ci-cd.yml` :
 
-#### Réponse attendue
+* Lance les tests `pytest`
+* Construit l’image Docker
+* Pousse l’image sur Docker Hub (ou GHCR)
 
-```json
-{
-  "msg": "You are not the owner of this property"
-}
-```
+### Secrets à configurer dans GitHub
 
-#### Test 2 : Modifier un bien avec le propriétaire
+* `DOCKER_USERNAME`
+* `DOCKER_PASSWORD` (Personal Access Token Docker Hub)
 
-```bash
-curl -X PUT http://localhost:5000/api/properties/update/1 \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <JWT_John>" \
-     -d '{
-           "name": "Maison à Paris (modifiée par John)"
-         }'
-```
+---
 
-#### Réponse attendue
+## Sécurité & bonnes pratiques
 
-```json
-{
-  "message": "Property updated successfully",
-  "property": {
-    "id": 1,
-    "name": "Maison à Paris (modifiée par John)",
-    "description": "Une très belle maison en plein cœur de Paris.",
-    "type": "Maison",
-    "city": "Paris"
-  }
-}
-}
-```
+* Secrets uniquement via `.env` ou Kubernetes Secrets
+* Pas de credentials en clair dans le dépôt
+* Contrôle d’accès propriétaire
+* Tests automatisés dans la CI
+* Autoscaling CPU dans Kubernetes
+
+---
+
+## Améliorations futures possibles
+
+* Hashage des mots de passe (bcrypt / argon2)
+* Validation des données (Pydantic)
+* Ingress + HTTPS
+* Monitoring basique
+* Tests d’intégration PostgreSQL
+
+---
+
+## Auteur
+
+**Youssef BOUJYDAH**
+Projet réalisé pour consolider les compétences backend & déploiement.
+
+Bonne exploration 🚀
